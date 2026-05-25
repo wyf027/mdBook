@@ -343,6 +343,11 @@ window.customElements.define('mdbook-sidebar-scrollbox', MDBookSidebarScrollbox)
         clone.querySelectorAll('mark').forEach(mark => {
             mark.replaceWith(...mark.childNodes);
         });
+        // Headings that are Markdown links end up with a nested <a> inside the
+        // header anchor. Unwrap them so the sidebar link is not empty.
+        clone.querySelectorAll('a').forEach(link => {
+            link.replaceWith(...link.childNodes);
+        });
         dest.append(...clone.childNodes);
     }
 
