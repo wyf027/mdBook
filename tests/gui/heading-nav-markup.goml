@@ -3,7 +3,7 @@
 set-window-size: (1400, 800)
 go-to: |DOC_PATH| + "heading-nav/markup.html"
 
-assert-count: (".header-item", 4)
+assert-count: (".header-item", 5)
 assert-count: (".current-header", 1)
 assert-text: (".current-header", "Heading with code or italic or bold or strike")
 assert-property: (".current-header", {"innerHTML": "Heading with <code>code</code> or <em>italic</em> or <strong>bold</strong> or <del>strike</del>"})
@@ -17,3 +17,13 @@ assert-text: (".current-header", "Heading with a custom id")
 click: "a.header-in-summary[href='#heading-with-html']"
 assert-count: (".current-header", 1)
 assert-text: (".current-header", "Heading with html")
+
+// Headings that are entirely a link should not render empty in the sidebar.
+click: "a.header-in-summary[href='#fzf']"
+assert-count: (".current-header", 1)
+assert-text: (".current-header", "fzf")
+
+// Headings with inline links should include the link text.
+click: "a.header-in-summary[href='#heading-with-a-link']"
+assert-count: (".current-header", 1)
+assert-text: (".current-header", "Heading with a link")

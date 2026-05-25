@@ -10,6 +10,10 @@ Basic markup should be copied.
 
 Probably not super-wise to have headings with links, but at least they shouldn't explode.
 
+## [fzf](https://github.com/junegunn/fzf)
+
+The entire heading is a link.
+
 ## Heading with a custom id { #custom-id .custom-class }
 
 Make sure navigation works on a custom id.
