@@ -164,7 +164,9 @@ pub(crate) struct MarkdownTreeBuilder<'opts, 'event, EventIter> {
     /// [`pulldown_cmark`] iterator of [`pulldown_cmark::Event`] elements.
     events: EventIter,
     /// The markdown source used to compute line numbers for diagnostics.
-    src: &'opts str,
+    line_breaks: Vec<usize>,
+    /// The markdown source length, used to clamp event offsets.
+    src_len: usize,
     /// Line number of the most recently processed event.
     current_line: usize,
     /// Options for how to generate the HTML.
@@ -224,7 +226,12 @@ where
 
         let mut builder = Self {
             events,
-            src,
+            line_breaks: src
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index))
+                .collect(),
+            src_len: src.len(),
             current_line: 1,
             options,
             tree,
@@ -245,7 +252,7 @@ where
 
     fn next_event(&mut self) -> Option<Event<'event>> {
         self.events.next().map(|(event, range)| {
-            self.current_line = line_number(self.src, range.start);
+            self.current_line = line_number(&self.line_breaks, self.src_len, range.start);
             event
         })
     }
@@ -1152,10 +1159,12 @@ fn fix_html_link(el: &mut Element) {
     }
 }
 
-/// Returns the 1-indexed line number for the given byte offset in `src`.
-fn line_number(src: &str, offset: usize) -> usize {
-    let offset = offset.min(src.len());
-    src[..offset].bytes().filter(|byte| *byte == b'\n').count() + 1
+/// Returns the 1-indexed line number for the given byte offset.
+fn line_number(line_breaks: &[usize], src_len: usize, offset: usize) -> usize {
+    let offset = offset.min(src_len);
+    match line_breaks.binary_search(&offset) {
+        Ok(index) | Err(index) => index + 1,
+    }
 }
 
 /// Whether or not this element name is a [void element].
