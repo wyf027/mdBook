@@ -283,6 +283,32 @@ fn unclosed_html_tags() {
         );
 }
 
+#[test]
+fn unclosed_html_tags_in_multiline_html_block() {
+    BookTest::init(|_| {})
+        .change_file(
+            "src/chapter_1.md",
+            r#"<div>
+  <span>foo
+
+paragraph"#,
+        )
+        .run("build", |cmd| {
+            cmd.expect_stderr(str![[r#"
+ INFO Book building has started
+ INFO Running the html backend
+ WARN unclosed HTML tag `<span>` found in `chapter_1.md` at line 1
+ WARN unclosed HTML tag `<div>` found in `chapter_1.md` at line 1
+ INFO HTML book written to `[ROOT]/book`
+
+"#]]);
+        })
+        .check_main_file(
+            "book/chapter_1.html",
+            str!["<div>\n  <span>foo\n<p>paragraph</p>\n</span></div>"],
+        );
+}
+
 // Test for HTML tags out of sync.
 #[test]
 fn unbalanced_html_tags() {

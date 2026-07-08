@@ -472,6 +472,7 @@ where
             Tag::HtmlBlock => {
                 // To process the HTML correctly, this needs to
                 // collect it all into a single string.
+                let html_start_line = self.current_line;
                 let mut html = String::new();
                 while let Some(event) = self.next_event() {
                     match event {
@@ -483,7 +484,10 @@ where
                         ),
                     }
                 }
+                let end_line = self.current_line;
+                self.current_line = html_start_line;
                 self.append_html(&html);
+                self.current_line = end_line;
                 // TagEnd::HtmlBlock must not pop.
                 return;
             }
