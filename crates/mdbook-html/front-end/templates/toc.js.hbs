@@ -23,7 +23,8 @@ class MDBookSidebarScrollbox extends HTMLElement {
                 link.href = path_to_root + href;
             }
             // The 'index' page is supposed to alias the first chapter in the book.
-            if (link.href === current_page
+            // Check both with and without the '.html' suffix to be robust against pretty URLs
+            if (link.href.replace(/\.html$/, '') === current_page.replace(/\.html$/, '')
                 || i === 0
                 && path_to_root === ''
                 && current_page.endsWith('/index.html')) {
@@ -345,6 +346,39 @@ window.customElements.define('mdbook-sidebar-scrollbox', MDBookSidebarScrollbox)
         dest.append(...clone.childNodes);
     }
 
+    function appendClonedHeaderChild(child, dest) {
+        const clone = child.cloneNode(true);
+        clone.querySelectorAll('mark').forEach(mark => {
+            mark.replaceWith(...mark.childNodes);
+        });
+        if (clone.tagName === 'A') {
+            const span = document.createElement('span');
+            span.append(...clone.childNodes);
+            dest.appendChild(span);
+        } else {
+            dest.appendChild(clone);
+        }
+    }
+
+    // Copies heading content into the sidebar. Browsers split nested <a>
+    // elements in headings, which can leave the header anchor empty.
+    function appendHeaderContent(heading, dest) {
+        const headerAnchor = heading.querySelector(':scope > a.header');
+        if (headerAnchor) {
+            filterHeader(headerAnchor, dest);
+        } else if (heading.children.length) {
+            filterHeader(heading.children[0], dest);
+            return;
+        }
+
+        for (const child of heading.children) {
+            if (child.classList.contains('header')) {
+                continue;
+            }
+            appendClonedHeaderChild(child, dest);
+        }
+    }
+
     // Scans page for headers and adds them to the sidebar.
     document.addEventListener('DOMContentLoaded', function() {
         const activeSection = document.querySelector('#mdbook-sidebar .active');
@@ -417,7 +451,7 @@ window.customElements.define('mdbook-sidebar-scrollbox', MDBookSidebarScrollbox)
             span.appendChild(a);
             a.href = '#' + header.id;
             a.classList.add('header-in-summary');
-            filterHeader(header.children[0], a);
+            appendHeaderContent(header, a);
             a.addEventListener('click', headerThresholdClick);
             const nextHeader = headers[i + 1];
             if (nextHeader !== undefined) {
