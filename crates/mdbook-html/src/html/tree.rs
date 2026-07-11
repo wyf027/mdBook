@@ -79,6 +79,8 @@ pub(crate) struct Element {
     pub(crate) self_closing: bool,
     /// True if this was raw HTML written in the markdown.
     pub(crate) was_raw: bool,
+    /// Line number in the source markdown where this element was opened.
+    pub(crate) source_line: Option<usize>,
 }
 
 impl Element {
@@ -90,6 +92,7 @@ impl Element {
             attrs: Attributes::new(),
             self_closing: false,
             was_raw: false,
+            source_line: None,
         }
     }
 
@@ -160,6 +163,12 @@ enum TableState {
 pub(crate) struct MarkdownTreeBuilder<'opts, 'event, EventIter> {
     /// [`pulldown_cmark`] iterator of [`pulldown_cmark::Event`] elements.
     events: EventIter,
+    /// The markdown source used to compute line numbers for diagnostics.
+    line_breaks: Vec<usize>,
+    /// The markdown source length, used to clamp event offsets.
+    src_len: usize,
+    /// Line number of the most recently processed event.
+    current_line: usize,
     /// Options for how to generate the HTML.
     options: &'opts HtmlRenderOptions<'opts>,
     /// The tree that is being built.
@@ -203,16 +212,27 @@ pub(crate) struct MarkdownTreeBuilder<'opts, 'event, EventIter> {
 
 impl<'opts, 'event, EventIter> MarkdownTreeBuilder<'opts, 'event, EventIter>
 where
-    EventIter: Iterator<Item = Event<'event>>,
+    EventIter: Iterator<Item = (Event<'event>, std::ops::Range<usize>)>,
 {
     /// Processes a [`pulldown_cmark`] iterator of [`pulldown_cmark::Event`]
     /// values, and generates a tree of [`Node`] values.
-    pub(crate) fn build(options: &'opts HtmlRenderOptions<'opts>, events: EventIter) -> Tree<Node> {
+    pub(crate) fn build(
+        options: &'opts HtmlRenderOptions<'opts>,
+        events: EventIter,
+        src: &'opts str,
+    ) -> Tree<Node> {
         let tree = Tree::new(Node::Fragment);
         let root = tree.root().id();
 
         let mut builder = Self {
             events,
+            line_breaks: src
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index))
+                .collect(),
+            src_len: src.len(),
+            current_line: 1,
             options,
             tree,
             current_node: root,
@@ -228,6 +248,13 @@ where
         builder.update_code_blocks();
         builder.convert_fontawesome();
         builder.tree
+    }
+
+    fn next_event(&mut self) -> Option<Event<'event>> {
+        self.events.next().map(|(event, range)| {
+            self.current_line = line_number(&self.line_breaks, self.src_len, range.start);
+            event
+        })
     }
 
     /// Append a new child to the current node.
@@ -302,7 +329,7 @@ where
 
     /// The main processing loop. Processes all events until the end.
     fn process_events(&mut self) {
-        while let Some(event) = self.events.next() {
+        while let Some(event) = self.next_event() {
             trace!("event={event:?}");
             match event {
                 Event::Start(tag) => self.start_tag(tag),
@@ -445,8 +472,9 @@ where
             Tag::HtmlBlock => {
                 // To process the HTML correctly, this needs to
                 // collect it all into a single string.
+                let html_start_line = self.current_line;
                 let mut html = String::new();
-                while let Some(event) = self.events.next() {
+                while let Some(event) = self.next_event() {
                     match event {
                         Event::Html(text) | Event::Text(text) => html.push_str(&text),
                         Event::End(TagEnd::HtmlBlock) => break,
@@ -456,7 +484,10 @@ where
                         ),
                     }
                 }
+                let end_line = self.current_line;
+                self.current_line = html_start_line;
                 self.append_html(&html);
+                self.current_line = end_line;
                 // TagEnd::HtmlBlock must not pop.
                 return;
             }
@@ -571,7 +602,7 @@ where
             }
             Tag::MetadataBlock(_) => {
                 // Eat all events till the end of MetadataBlock.
-                while let Some(event) = self.events.next() {
+                while let Some(event) = self.next_event() {
                     if matches!(event, Event::End(TagEnd::MetadataBlock(_))) {
                         break;
                     }
@@ -598,10 +629,11 @@ where
                 break;
             }
             warn!(
-                "unclosed HTML tag `<{}>` found in `{}` while exiting {tag:?}\n\
+                "unclosed HTML tag `<{}>` found in `{}` at line {} while exiting {tag:?}\n\
                 HTML tags must be closed before exiting a markdown element.",
                 el.name.local,
                 self.options.path.display(),
+                el.source_line.unwrap_or(self.current_line),
             );
             self.pop();
         }
@@ -674,6 +706,7 @@ where
             attrs,
             self_closing: tag.self_closing,
             was_raw: true,
+            source_line: Some(self.current_line),
         };
         fix_html_link(&mut el);
         self.push(Node::Element(el));
@@ -718,7 +751,7 @@ where
     /// current nesting level.
     fn eat_till_end(&mut self) {
         let mut nest = 0;
-        while let Some(event) = self.events.next() {
+        while let Some(event) = self.next_event() {
             match event {
                 Event::Start(_) => nest += 1,
                 Event::End(_) => {
@@ -737,7 +770,7 @@ where
     fn text_for_img_alt(&mut self) -> String {
         let mut nest = 0;
         let mut output = String::new();
-        while let Some(event) = self.events.next() {
+        while let Some(event) = self.next_event() {
             match event {
                 Event::Start(_) => nest += 1,
                 Event::End(_) => {
@@ -777,9 +810,10 @@ where
                 Node::Element(el) => {
                     if el.was_raw {
                         warn!(
-                            "unclosed HTML tag `<{}>` found in `{}`",
+                            "unclosed HTML tag `<{}>` found in `{}` at line {}",
                             el.name.local,
-                            self.options.path.display()
+                            self.options.path.display(),
+                            el.source_line.unwrap_or(self.current_line),
                         );
                     } else {
                         panic!(
@@ -1126,6 +1160,14 @@ fn fix_html_link(el: &mut Element) {
             let fixed = fix_link(value.into());
             el.insert_attr(attr, fixed.into_tendril());
         }
+    }
+}
+
+/// Returns the 1-indexed line number for the given byte offset.
+fn line_number(line_breaks: &[usize], src_len: usize, offset: usize) -> usize {
+    let offset = offset.min(src_len);
+    match line_breaks.binary_search(&offset) {
+        Ok(index) | Err(index) => index + 1,
     }
 }
 
