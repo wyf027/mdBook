@@ -1,0 +1,411 @@
+# Instincts generated from https://github.com/leno23/mdBook
+# Generated: 2026-05-25T02:58:02.451Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: mdBook-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Commit Length
+
+## Action
+
+Keep commit messages concise (~38 characters)
+
+## Evidence
+
+- Average commit message length: 38 chars
+- Based on 8 commits
+
+---
+id: mdBook-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Naming Files
+
+## Action
+
+Use PascalCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: PascalCase
+
+---
+id: mdBook-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: mdBook-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: mdBook-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: mdBook-workflow-version-bump-release
+trigger: "when doing version bump release"
+confidence: 0.55
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Workflow Version Bump Release
+
+## Action
+
+Follow the version-bump-release workflow:
+1. Update the version number in Cargo.toml files for all crates.
+2. Update the root Cargo.toml and Cargo.lock.
+3. Update the CHANGELOG.md with release notes.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~1x per month
+- Files: CHANGELOG.md, Cargo.lock, Cargo.toml
+
+---
+id: mdBook-workflow-single-file-front-end-template-fix
+trigger: "when doing single file front end template fix"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Workflow Single File Front End Template Fix
+
+## Action
+
+Follow the single-file-front-end-template-fix workflow:
+1. Edit crates/mdbook-html/front-end/templates/toc.js.hbs to fix or improve TOC behavior.
+2. Commit the change, sometimes with a brief message.
+3. Optionally merge via pull request.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: crates/mdbook-html/front-end/templates/toc.js.hbs
+
+---
+id: mdBook-workflow-single-file-css-front-end-tweak
+trigger: "when doing single file css front end tweak"
+confidence: 0.55
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/leno23/mdBook
+---
+
+# MdBook Workflow Single File Css Front End Tweak
+
+## Action
+
+Follow the single-file-css-front-end-tweak workflow:
+1. Edit crates/mdbook-html/front-end/css/chrome.css to adjust styles.
+2. Commit the change, often referencing an issue or improvement.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~1x per month
+- Files: crates/mdbook-html/front-end/css/chrome.css
+
+---
+id: mdbook-instinct-file-naming
+trigger: "When creating a new file in the codebase."
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct File Naming
+
+## Action
+
+Name the file using PascalCase.
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files = PascalCase
+
+---
+id: mdbook-instinct-function-naming
+trigger: "When defining a new function."
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Function Naming
+
+## Action
+
+Use camelCase for the function name.
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions = camelCase
+
+---
+id: mdbook-instinct-class-naming
+trigger: "When declaring a new class."
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Class Naming
+
+## Action
+
+Use PascalCase for the class name.
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes = PascalCase
+
+---
+id: mdbook-instinct-constant-naming
+trigger: "When declaring a constant."
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for the constant name.
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants = SCREAMING_SNAKE_CASE
+
+---
+id: mdbook-instinct-import-style
+trigger: "When importing modules in TypeScript files."
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Import Style
+
+## Action
+
+Use relative import paths.
+
+## Evidence
+
+- Pattern in codeStyle.importStyle = relative
+
+---
+id: mdbook-instinct-export-style
+trigger: "When exporting modules or functions."
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Export Style
+
+## Action
+
+Use named exports.
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle = named
+
+---
+id: mdbook-instinct-test-location
+trigger: "When adding new tests."
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Test Location
+
+## Action
+
+Place tests in the separate 'tests' folder.
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation = separate
+- Presence of 'tests' folder
+
+---
+id: mdbook-instinct-commit-prefix-fix
+trigger: "When making a commit that fixes a bug or issue."
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Commit Prefix Fix
+
+## Action
+
+Prefix the commit message with 'fix' or include 'fix' in the message.
+
+## Evidence
+
+- Commits like 'fix(html): show sidebar text for link-only headings'
+- Pattern in commits.prefixes = ['fix']
+
+---
+id: mdbook-instinct-commit-length
+trigger: "When writing a commit message."
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Commit Length
+
+## Action
+
+Keep the commit message concise, around 38 characters on average.
+
+## Evidence
+
+- Pattern in commits.averageLength = 38
+- Examples of short commit messages
+
+---
+id: mdbook-instinct-version-bump-release
+trigger: "When preparing a new release version of mdBook."
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Version Bump Release
+
+## Action
+
+Update all Cargo.toml files, Cargo.lock, and CHANGELOG.md with the new version and release notes.
+
+## Evidence
+
+- Workflow: version-bump-release
+- Commits: 'Update the version number in Cargo.toml files for all crates.', 'Update the root Cargo.toml and Cargo.lock.', 'Update the CHANGELOG.md with release notes.'
+
+---
+id: mdbook-instinct-fix-toc-template
+trigger: "When a bug or improvement is needed in the TOC JavaScript template."
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Fix Toc Template
+
+## Action
+
+Edit crates/mdbook-html/front-end/templates/toc.js.hbs to fix or improve TOC behavior and commit the change.
+
+## Evidence
+
+- Workflow: single-file-front-end-template-fix
+- Commits editing 'crates/mdbook-html/front-end/templates/toc.js.hbs'
+
+---
+id: mdbook-instinct-tweak-css
+trigger: "When a UI/UX improvement is needed for sidebar or general chrome appearance."
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: leno23/mdBook
+---
+
+# Mdbook Instinct Tweak Css
+
+## Action
+
+Edit crates/mdbook-html/front-end/css/chrome.css to adjust styles and commit the change.
+
+## Evidence
+
+- Workflow: single-file-css-front-end-tweak
+- Commits editing 'crates/mdbook-html/front-end/css/chrome.css'
+
